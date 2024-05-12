@@ -40,7 +40,13 @@
        "Action": "s3:GetObject",
        "Effect": "Allow",
        "Principal": {
-        "AWS": "*"
+        "AWS": "*",
+        "CanonicalUser": {
+         "Fn::GetAtt": [
+          "OriginAccessIdentityDF1E3CAC",
+          "S3CanonicalUserId"
+         ]
+        }
        },
        "Resource": {
         "Fn::Join": [
@@ -69,6 +75,44 @@
          "Fn::GetAtt": [
           "CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092",
           "Arn"
+         ]
+        }
+       },
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "SiteBucket397A1860",
+          "Arn"
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "SiteBucket397A1860",
+             "Arn"
+            ]
+           },
+           "/*"
+          ]
+         ]
+        }
+       ]
+      },
+      {
+       "Action": [
+        "s3:GetBucket*",
+        "s3:GetObject*",
+        "s3:List*"
+       ],
+       "Effect": "Allow",
+       "Principal": {
+        "CanonicalUser": {
+         "Fn::GetAtt": [
+          "OriginAccessIdentityDF1E3CAC",
+          "S3CanonicalUserId"
          ]
         }
        },
@@ -191,6 +235,80 @@
     "aws:asset:property": "Code"
    }
   },
+  "OriginAccessIdentityDF1E3CAC": {
+   "Type": "AWS::CloudFront::CloudFrontOriginAccessIdentity",
+   "Properties": {
+    "CloudFrontOriginAccessIdentityConfig": {
+     "Comment": "Allows CloudFront to reach the bucket"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "S3Website/OriginAccessIdentity/Resource"
+   }
+  },
+  "ReactDeploymentDistributionCFDistribution676B033E": {
+   "Type": "AWS::CloudFront::Distribution",
+   "Properties": {
+    "DistributionConfig": {
+     "DefaultCacheBehavior": {
+      "AllowedMethods": [
+       "GET",
+       "HEAD"
+      ],
+      "CachedMethods": [
+       "GET",
+       "HEAD"
+      ],
+      "Compress": true,
+      "ForwardedValues": {
+       "Cookies": {
+        "Forward": "none"
+       },
+       "QueryString": false
+      },
+      "TargetOriginId": "origin1",
+      "ViewerProtocolPolicy": "redirect-to-https"
+     },
+     "DefaultRootObject": "index.html",
+     "Enabled": true,
+     "HttpVersion": "http2",
+     "IPV6Enabled": true,
+     "Origins": [
+      {
+       "ConnectionAttempts": 3,
+       "ConnectionTimeout": 10,
+       "DomainName": {
+        "Fn::GetAtt": [
+         "SiteBucket397A1860",
+         "RegionalDomainName"
+        ]
+       },
+       "Id": "origin1",
+       "S3OriginConfig": {
+        "OriginAccessIdentity": {
+         "Fn::Join": [
+          "",
+          [
+           "origin-access-identity/cloudfront/",
+           {
+            "Ref": "OriginAccessIdentityDF1E3CAC"
+           }
+          ]
+         ]
+        }
+       }
+      }
+     ],
+     "PriceClass": "PriceClass_100",
+     "ViewerCertificate": {
+      "CloudFrontDefaultCertificate": true
+     }
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "S3Website/ReactDeploymentDistribution/CFDistribution"
+   }
+  },
   "DeployWebsiteAwsCliLayer17DBC421": {
    "Type": "AWS::Lambda::LayerVersion",
    "Properties": {
@@ -224,7 +342,7 @@
      }
     ],
     "SourceObjectKeys": [
-     "8a620e5209863718d1ea355fc04cc09774cc0050e22b67c3e27d110a654141f1.zip"
+     "57bbf658946a72215f834851e9a95adc7c504f78f0ae4ccf62c25d1660c002e2.zip"
     ],
     "DestinationBucketName": {
      "Ref": "SiteBucket397A1860"
@@ -406,7 +524,7 @@
   "CDKMetadata": {
    "Type": "AWS::CDK::Metadata",
    "Properties": {
-    "Analytics": "v2:deflate64:H4sIAAAAAAAA/1WQwYqDMBCGn6X3OGvbQ8+ty54KWxT2KmkcZWpMSiapiPjui0bs7un/55sQPuYApxOkO9lzoqo20XSHsfBStUL2XI58hPESVIteZLVZW4yb1aSGN17nOFwk4yT4WI4VPrUdOjQe4upzA0Iyo2c4zzEJLbt7JWHManOVA7ofdEzWiIJMo9Fb8xWM8jPZSlZvcBIkOxhzq3HGS74VY5smkQX2tsuRbXAqvtz6v9XN2RdV6MRiV3jZkGlWx1LPfqXsWWmCc8+ZpkVZ/P34O/hnWO6WWVNRlDS2Qnjwx+uQwn4P6e7BRIkLxlOHkMf8BS+uOB+VAQAA"
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/21QTYvCMBD9Ld5j1o+DZ60ICwuKwu6xpMm0jE0TyUwsUvrfl7RSXdjT+5g3mUdWcrORi5lqaa5NPbdYyO7CStdCtZR3tJbdLuoaWGSle7IRTt6ifrzspx7FThH0QlsfTRm8Y9kdA1botloD0acBx8jDcpYyh5T5PzGNf6DYI3HAIjJ6l3bfdS9onXcGbtY/GnAsxyL7yRCKCJjkNkEvrGoKo2SXle5LPSB8Q6D07AVdZYG9O0Snh0MTycrJ7AWqRnZnbyHZA74+ZGR9L7JI7JszkI9Bj8mJ/xmdgr+jgSCGdhdWFboq5Y+Rb5GfbXObmuaqJW1RblvKLA7lxfuJzDuDY0nnDcgrfdxXC7lcysXsSojzEB1jA/I84i/3ydyzAwIAAA=="
    },
    "Metadata": {
     "aws:cdk:path": "S3Website/CDKMetadata/Default"
@@ -415,6 +533,15 @@
   }
  },
  "Outputs": {
+  "CloudFrontDistributionDomainName": {
+   "Description": "CloudFront Distribution Domain Name",
+   "Value": {
+    "Fn::GetAtt": [
+     "ReactDeploymentDistributionCFDistribution676B033E",
+     "DomainName"
+    ]
+   }
+  },
   "WebsiteURL": {
    "Value": {
     "Fn::GetAtt": [

@@ -62,7 +62,13 @@
                               "Action": "s3:GetObject",
                               "Effect": "Allow",
                               "Principal": {
-                                "AWS": "*"
+                                "AWS": "*",
+                                "CanonicalUser": {
+                                  "Fn::GetAtt": [
+                                    "OriginAccessIdentityDF1E3CAC",
+                                    "S3CanonicalUserId"
+                                  ]
+                                }
                               },
                               "Resource": {
                                 "Fn::Join": [
@@ -91,6 +97,44 @@
                                   "Fn::GetAtt": [
                                     "CustomS3AutoDeleteObjectsCustomResourceProviderRole3B1BD092",
                                     "Arn"
+                                  ]
+                                }
+                              },
+                              "Resource": [
+                                {
+                                  "Fn::GetAtt": [
+                                    "SiteBucket397A1860",
+                                    "Arn"
+                                  ]
+                                },
+                                {
+                                  "Fn::Join": [
+                                    "",
+                                    [
+                                      {
+                                        "Fn::GetAtt": [
+                                          "SiteBucket397A1860",
+                                          "Arn"
+                                        ]
+                                      },
+                                      "/*"
+                                    ]
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "Action": [
+                                "s3:GetBucket*",
+                                "s3:GetObject*",
+                                "s3:List*"
+                              ],
+                              "Effect": "Allow",
+                              "Principal": {
+                                "CanonicalUser": {
+                                  "Fn::GetAtt": [
+                                    "OriginAccessIdentityDF1E3CAC",
+                                    "S3CanonicalUserId"
                                   ]
                                 }
                               },
@@ -188,6 +232,118 @@
             },
             "constructInfo": {
               "fqn": "aws-cdk-lib.CustomResourceProvider",
+              "version": "2.77.0"
+            }
+          },
+          "OriginAccessIdentity": {
+            "id": "OriginAccessIdentity",
+            "path": "S3Website/OriginAccessIdentity",
+            "children": {
+              "Resource": {
+                "id": "Resource",
+                "path": "S3Website/OriginAccessIdentity/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::CloudFront::CloudFrontOriginAccessIdentity",
+                  "aws:cdk:cloudformation:props": {
+                    "cloudFrontOriginAccessIdentityConfig": {
+                      "comment": "Allows CloudFront to reach the bucket"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_cloudfront.CfnCloudFrontOriginAccessIdentity",
+                  "version": "2.77.0"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_cloudfront.OriginAccessIdentity",
+              "version": "2.77.0"
+            }
+          },
+          "ReactDeploymentDistribution": {
+            "id": "ReactDeploymentDistribution",
+            "path": "S3Website/ReactDeploymentDistribution",
+            "children": {
+              "CFDistribution": {
+                "id": "CFDistribution",
+                "path": "S3Website/ReactDeploymentDistribution/CFDistribution",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::CloudFront::Distribution",
+                  "aws:cdk:cloudformation:props": {
+                    "distributionConfig": {
+                      "enabled": true,
+                      "defaultRootObject": "index.html",
+                      "httpVersion": "http2",
+                      "priceClass": "PriceClass_100",
+                      "ipv6Enabled": true,
+                      "origins": [
+                        {
+                          "id": "origin1",
+                          "domainName": {
+                            "Fn::GetAtt": [
+                              "SiteBucket397A1860",
+                              "RegionalDomainName"
+                            ]
+                          },
+                          "s3OriginConfig": {
+                            "originAccessIdentity": {
+                              "Fn::Join": [
+                                "",
+                                [
+                                  "origin-access-identity/cloudfront/",
+                                  {
+                                    "Ref": "OriginAccessIdentityDF1E3CAC"
+                                  }
+                                ]
+                              ]
+                            }
+                          },
+                          "connectionAttempts": 3,
+                          "connectionTimeout": 10
+                        }
+                      ],
+                      "defaultCacheBehavior": {
+                        "allowedMethods": [
+                          "GET",
+                          "HEAD"
+                        ],
+                        "cachedMethods": [
+                          "GET",
+                          "HEAD"
+                        ],
+                        "compress": true,
+                        "forwardedValues": {
+                          "queryString": false,
+                          "cookies": {
+                            "forward": "none"
+                          }
+                        },
+                        "targetOriginId": "origin1",
+                        "viewerProtocolPolicy": "redirect-to-https"
+                      },
+                      "viewerCertificate": {
+                        "cloudFrontDefaultCertificate": true
+                      }
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_cloudfront.CfnDistribution",
+                  "version": "2.77.0"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_cloudfront.CloudFrontWebDistribution",
+              "version": "2.77.0"
+            }
+          },
+          "CloudFrontDistributionDomainName": {
+            "id": "CloudFrontDistributionDomainName",
+            "path": "S3Website/CloudFrontDistributionDomainName",
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.CfnOutput",
               "version": "2.77.0"
             }
           },

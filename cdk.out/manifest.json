@@ -17,7 +17,7 @@
         "validateOnSynth": false,
         "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-deploy-role-${AWS::AccountId}-${AWS::Region}",
         "cloudFormationExecutionRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-cfn-exec-role-${AWS::AccountId}-${AWS::Region}",
-        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/da2ee2fc56ead376998a9e44b58c6a5a6decaa1b477dc4f202de028884a8c6cd.json",
+        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/9b661fa7cde9ae1a55034e0f6c0ad88b523a46700d5162a72cd2d919ebd31619.json",
         "requiresBootstrapStackVersion": 6,
         "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version",
         "additionalDependencies": [
@@ -61,6 +61,24 @@
           {
             "type": "aws:cdk:logicalId",
             "data": "CustomS3AutoDeleteObjectsCustomResourceProviderHandler9D90184F"
+          }
+        ],
+        "/S3Website/OriginAccessIdentity/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "OriginAccessIdentityDF1E3CAC"
+          }
+        ],
+        "/S3Website/ReactDeploymentDistribution/CFDistribution": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ReactDeploymentDistributionCFDistribution676B033E"
+          }
+        ],
+        "/S3Website/CloudFrontDistributionDomainName": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CloudFrontDistributionDomainName"
           }
         ],
         "/S3Website/DeployWebsite/AwsCliLayer/Resource": [
